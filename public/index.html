@@ -22,6 +22,14 @@
         <div class="space-y-4 text-sm">
             <div class="flex items-center"><i class="fas fa-network-wired w-5 text-center text-gray-400"></i><span class="text-gray-600 font-semibold ml-3 mr-2">IP 地址:</span><span id="ip-address" class="text-gray-800 font-mono"><div class="loading-placeholder"></div></span></div>
             <div class="flex items-center"><i class="fas fa-map-marker-alt w-5 text-center text-gray-400"></i><span class="text-gray-600 font-semibold ml-3 mr-2">地理位置:</span><span id="location" class="text-gray-800"><div class="loading-placeholder"></div></span></div>
+
+            <!-- 新增：显示距离的行 -->
+            <div class="flex items-center">
+                <i class="fas fa-road w-5 text-center text-gray-400"></i>
+                <span id="distance-label" class="text-gray-600 font-semibold ml-3 mr-2">与北京距离:</span>
+                <span id="distance" class="text-gray-800"><div class="loading-placeholder"></div></span>
+            </div>
+
             <div class="flex items-center"><i class="fas fa-wifi w-5 text-center text-gray-400"></i><span class="text-gray-600 font-semibold ml-3 mr-2">运 营 商:</span><span id="isp" class="text-gray-800"><div class="loading-placeholder"></div></span></div>
             <div class="flex items-center"><i class="fas fa-laptop-code w-5 text-center text-gray-400"></i><span class="text-gray-600 font-semibold ml-3 mr-2">操作系统:</span><span id="os" class="text-gray-800"><div class="loading-placeholder"></div></span></div>
             <div class="flex items-center"><i class="fab fa-chrome w-5 text-center text-gray-400"></i><span class="text-gray-600 font-semibold ml-3 mr-2">浏 览 器:</span><span id="browser" class="text-gray-800"><div class="loading-placeholder"></div></span></div>
@@ -35,6 +43,10 @@
             const ispEl = document.getElementById('isp');
             const osEl = document.getElementById('os');
             const browserEl = document.getElementById('browser');
+            // 新增：获取距离相关的元素
+            const distanceLabelEl = document.getElementById('distance-label');
+            const distanceEl = document.getElementById('distance');
+
             const apiUrl = '/api'; // 使用相对路径调用后端的 API
             async function fetchVisitorInfo() {
                 try {
@@ -47,6 +59,10 @@
                         ispEl.textContent = data.isp || '未知';
                         osEl.textContent = data.os || '未知';
                         browserEl.textContent = data.browser || '未知';
+                        // 新增：更新距离信息
+                        distanceEl.textContent = data.distance || '未知';
+                        distanceLabelEl.textContent = `与${data.targetLocationName}距离:`;
+
                     } else { throw new Error('API 返回的数据格式不正确'); }
                 } catch (error) {
                     console.error('获取访客信息失败:', error);
@@ -56,6 +72,8 @@
                     ispEl.textContent = errorMessage;
                     osEl.textContent = errorMessage;
                     browserEl.textContent = errorMessage;
+                    // 新增：错误时也更新距离
+                    distanceEl.textContent = errorMessage;
                 }
             }
             fetchVisitorInfo();
