@@ -105,97 +105,98 @@
     }
 </style>
 
-<script is:inline>
-    // 移除 DOMContentLoaded，让脚本在 Astro 环境下正确执行
-    const BLOGGER_LAT = 23.0575; // 你的纬度
-    const BLOGGER_LON = 112.4536; // 你的经度
+<script>
+    // 将脚本逻辑重新包裹在 DOMContentLoaded 事件中
+    document.addEventListener('DOMContentLoaded', () => {
+        const BLOGGER_LAT = 23.0575; // 你的纬度
+        const BLOGGER_LON = 112.4536; // 你的经度
 
-    const calculateDistance = (lat1, lon1, lat2, lon2) => {
-        const R = 6371;
-        const dLat = (lat2 - lat1) * Math.PI / 180;
-        const dLon = (lon2 - lon1) * Math.PI / 180;
-        const a = 0.5 - Math.cos(dLat) / 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * (1 - Math.cos(dLon)) / 2;
-        return Math.round(R * 2 * Math.asin(Math.sqrt(a)));
-    };
+        const calculateDistance = (lat1, lon1, lat2, lon2) => {
+            const R = 6371;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = 0.5 - Math.cos(dLat) / 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * (1 - Math.cos(dLon)) / 2;
+            return Math.round(R * 2 * Math.asin(Math.sqrt(a)));
+        };
 
-    const getOS = () => {
-      const ua = navigator.userAgent;
-      if (ua.includes('Win')) return 'Windows';
-      if (ua.includes('Mac')) return 'MacOS';
-      if (ua.includes('Linux')) return 'Linux';
-      if (ua.includes('Android')) return 'Android';
-      if (ua.includes('like Mac')) return 'iOS';
-      return 'Unknown';
-    };
+        const getOS = () => {
+          const ua = navigator.userAgent;
+          if (ua.includes('Win')) return 'Windows';
+          if (ua.includes('Mac')) return 'MacOS';
+          if (ua.includes('Linux')) return 'Linux';
+          if (ua.includes('Android')) return 'Android';
+          if (ua.includes('like Mac')) return 'iOS';
+          return 'Unknown';
+        };
 
-    const getBrowser = () => {
-      const ua = navigator.userAgent;
-      if (ua.includes('Chrome') && !ua.includes('Edg')) return 'Chrome';
-      if (ua.includes('Safari') && !ua.includes('Chrome')) return 'Safari';
-      if (ua.includes('Firefox')) return 'Firefox';
-      if (ua.includes('Edg')) return 'Edge';
-      return 'Unknown';
-    };
+        const getBrowser = () => {
+          const ua = navigator.userAgent;
+          if (ua.includes('Chrome') && !ua.includes('Edg')) return 'Chrome';
+          if (ua.includes('Safari') && !ua.includes('Chrome')) return 'Safari';
+          if (ua.includes('Firefox')) return 'Firefox';
+          if (ua.includes('Edg')) return 'Edge';
+          return 'Unknown';
+        };
 
-    const setInfo = (id, text) => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = text;
-    };
-    
-    const setAllToFailure = () => {
-        setInfo('ip-address', '获取失败');
-        setInfo('location', '获取失败');
-        setInfo('isp', '获取失败');
-        setInfo('distance', '获取失败');
-    };
+        const setInfo = (id, text) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = text;
+        };
+        
+        const setAllToFailure = () => {
+            setInfo('ip-address', '获取失败');
+            setInfo('location', '获取失败');
+            setInfo('isp', '获取失败');
+            setInfo('distance', '获取失败');
+        };
 
-    const fetchIpInfo = async () => {
-        setInfo('os', getOS());
-        setInfo('browser', getBrowser());
+        const fetchIpInfo = async () => {
+            setInfo('os', getOS());
+            setInfo('browser', getBrowser());
 
-        try {
-            // 首先尝试 ip.sb
-            const response = await fetch('https://api.ip.sb/geoip');
-            if (!response.ok) throw new Error('Network response was not ok for ip.sb');
-            const data = await response.json();
-
-            setInfo('ip-address', data.ip || 'N/A');
-            setInfo('location', `${data.country || ''}, ${data.city || ''}`);
-            setInfo('isp', data.organization || 'N/A');
-            
-            if (data.latitude && data.longitude) {
-                const dist = calculateDistance(BLOGGER_LAT, BLOGGER_LON, data.latitude, data.longitude);
-                setInfo('distance', `约 ${dist} 公里`);
-            } else {
-                setInfo('distance', '无法计算');
-            }
-        } catch (error1) {
-            console.error('Error fetching from ip.sb, trying fallback:', error1);
-            // 如果 ip.sb 失败，尝试 ip-api.com
             try {
-                const response = await fetch('https://ip-api.com/json');
-                if (!response.ok) throw new Error('Network response was not ok for ip-api.com');
+                // 首先尝试 ip.sb
+                const response = await fetch('https://api.ip.sb/geoip');
+                if (!response.ok) throw new Error('Network response was not ok for ip.sb');
                 const data = await response.json();
 
-                if (data.status !== 'success') throw new Error('API status was not success');
-
-                setInfo('ip-address', data.query || 'N/A');
+                setInfo('ip-address', data.ip || 'N/A');
                 setInfo('location', `${data.country || ''}, ${data.city || ''}`);
-                setInfo('isp', data.isp || 'N/A');
-
-                if (data.lat && data.lon) {
-                    const dist = calculateDistance(BLOGGER_LAT, BLOGGER_LON, data.lat, data.lon);
+                setInfo('isp', data.organization || 'N/A');
+                
+                if (data.latitude && data.longitude) {
+                    const dist = calculateDistance(BLOGGER_LAT, BLOGGER_LON, data.latitude, data.longitude);
                     setInfo('distance', `约 ${dist} 公里`);
                 } else {
                     setInfo('distance', '无法计算');
                 }
-            } catch (error2) {
-                console.error('Error fetching from fallback ip-api.com:', error2);
-                setAllToFailure();
-            }
-        }
-    };
+            } catch (error1) {
+                console.error('Error fetching from ip.sb, trying fallback:', error1);
+                // 如果 ip.sb 失败，尝试 ip-api.com
+                try {
+                    const response = await fetch('https://ip-api.com/json');
+                    if (!response.ok) throw new Error('Network response was not ok for ip-api.com');
+                    const data = await response.json();
 
-    // 直接调用函数，而不是包裹在事件监听器中
-    fetchIpInfo();
+                    if (data.status !== 'success') throw new Error('API status was not success');
+
+                    setInfo('ip-address', data.query || 'N/A');
+                    setInfo('location', `${data.country || ''}, ${data.city || ''}`);
+                    setInfo('isp', data.isp || 'N/A');
+
+                    if (data.lat && data.lon) {
+                        const dist = calculateDistance(BLOGGER_LAT, BLOGGER_LON, data.lat, data.lon);
+                        setInfo('distance', `约 ${dist} 公里`);
+                    } else {
+                        setInfo('distance', '无法计算');
+                    }
+                } catch (error2) {
+                    console.error('Error fetching from fallback ip-api.com:', error2);
+                    setAllToFailure();
+                }
+            }
+        };
+
+        fetchIpInfo();
+    });
 </script>
