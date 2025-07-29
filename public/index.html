@@ -1,0 +1,65 @@
+<!-- public/index.html -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>访客信息卡片</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+        .loading-placeholder { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; background-color: #e5e7eb; border-radius: 0.25rem; height: 1.25rem; width: 75%; }
+    </style>
+</head>
+<body class="bg-gray-100 p-4 sm:p-8 flex items-center justify-center min-h-screen">
+    <div id="visitor-info-card" class="w-full max-w-sm bg-white rounded-2xl shadow-lg p-6 transition-all duration-500">
+        <div class="flex items-center border-b border-gray-200 pb-4 mb-4">
+            <i class="fas fa-user-secret text-xl text-blue-500"></i>
+            <h2 class="text-lg font-bold text-gray-800 ml-3">访客信息</h2>
+        </div>
+        <div class="space-y-4 text-sm">
+            <div class="flex items-center"><i class="fas fa-network-wired w-5 text-center text-gray-400"></i><span class="text-gray-600 font-semibold ml-3 mr-2">IP 地址:</span><span id="ip-address" class="text-gray-800 font-mono"><div class="loading-placeholder"></div></span></div>
+            <div class="flex items-center"><i class="fas fa-map-marker-alt w-5 text-center text-gray-400"></i><span class="text-gray-600 font-semibold ml-3 mr-2">地理位置:</span><span id="location" class="text-gray-800"><div class="loading-placeholder"></div></span></div>
+            <div class="flex items-center"><i class="fas fa-wifi w-5 text-center text-gray-400"></i><span class="text-gray-600 font-semibold ml-3 mr-2">运 营 商:</span><span id="isp" class="text-gray-800"><div class="loading-placeholder"></div></span></div>
+            <div class="flex items-center"><i class="fas fa-laptop-code w-5 text-center text-gray-400"></i><span class="text-gray-600 font-semibold ml-3 mr-2">操作系统:</span><span id="os" class="text-gray-800"><div class="loading-placeholder"></div></span></div>
+            <div class="flex items-center"><i class="fab fa-chrome w-5 text-center text-gray-400"></i><span class="text-gray-600 font-semibold ml-3 mr-2">浏 览 器:</span><span id="browser" class="text-gray-800"><div class="loading-placeholder"></div></span></div>
+        </div>
+        <div class="border-t border-gray-200 pt-3 mt-5 text-xs text-gray-400 text-center">由 Cloudflare Pages 提供支持</div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const ipAddressEl = document.getElementById('ip-address');
+            const locationEl = document.getElementById('location');
+            const ispEl = document.getElementById('isp');
+            const osEl = document.getElementById('os');
+            const browserEl = document.getElementById('browser');
+            const apiUrl = '/api'; // 使用相对路径调用后端的 API
+            async function fetchVisitorInfo() {
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`网络响应错误: ${response.status}`);
+                    const data = await response.json();
+                    if (data && data.ip) {
+                        ipAddressEl.textContent = data.ip || '未知';
+                        locationEl.textContent = data.address || '未知';
+                        ispEl.textContent = data.isp || '未知';
+                        osEl.textContent = data.os || '未知';
+                        browserEl.textContent = data.browser || '未知';
+                    } else { throw new Error('API 返回的数据格式不正确'); }
+                } catch (error) {
+                    console.error('获取访客信息失败:', error);
+                    const errorMessage = '信息加载失败';
+                    ipAddressEl.textContent = errorMessage;
+                    locationEl.textContent = errorMessage;
+                    ispEl.textContent = errorMessage;
+                    osEl.textContent = errorMessage;
+                    browserEl.textContent = errorMessage;
+                }
+            }
+            fetchVisitorInfo();
+        });
+    </script>
+</body>
+</html>
