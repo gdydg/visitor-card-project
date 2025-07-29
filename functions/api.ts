@@ -33,7 +33,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     // --- 目标地点坐标 (默认为北京天安门) ---
     // 您可以修改为任何您想要的地点
     const targetLocation = {
-        name: "北京",
+        name: "博主",
         latitude: 39.9042,
         longitude: 116.4074
     };
